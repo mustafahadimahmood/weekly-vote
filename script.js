@@ -1,6 +1,6 @@
 const participants = ["Christa", "Ruben", "Mustafa", "Theo", "Cordula", "Neli"];
 const adminName = "Mustafa";
-const adminPassword = "admin123";
+const adminPassword = "Wks07072023";
 let isAdmin = false;
 
 // localStorage key
@@ -98,3 +98,4 @@ function renderTable() {
 
 let voteData = loadData();
 renderTable();
+
