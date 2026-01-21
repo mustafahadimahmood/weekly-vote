@@ -1,0 +1,6 @@
+body { font-family: Arial; padding: 20px; }
+h1 { text-align: center; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { border: 1px solid #333; text-align: center; padding: 10px; }
+select { width: 80px; }
+#loginMsg { margin-left: 10px; color: red; }
