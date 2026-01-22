@@ -1,82 +1,51 @@
-const participants = ["Christa", "Ruben", "Mustafa", "Theo", "Cordula", "Neli"];
+const participants = ["Christa","Ruben","Mustafa","Theo","Cordula","Neli"];
 const adminName = "Mustafa";
-const adminPassword = "admin123";
-let isAdmin = false;
+let currentUser = "";
+let tableData = {};
 
-// localStorage key
-const STORAGE_KEY = "weeklyVotes";
+function loginUser() {
+  const input = document.getElementById("userName").value.trim();
+  const name = input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
 
-// Admin Login
-function loginAdmin() {
-  const pass = document.getElementById("adminPass").value;
-  if(pass === adminPassword) {
-    isAdmin = true;
-    document.getElementById("loginMsg").textContent = "Admin eingeloggt!";
-    renderTable();
-  } else {
-    document.getElementById("loginMsg").textContent = "Falsches Passwort!";
+  if (!participants.includes(name)) {
+    document.getElementById("msg").textContent = "Name nicht in der Liste!";
+    return;
   }
+
+  currentUser = name;
+  document.getElementById("msg").textContent = "";
+  document.getElementById("login").style.display = "none";
+  document.getElementById("tableContainer").style.display = "block";
+
+  renderTable();
 }
 
-// Berechne nächsten Mittwoch
+// Berechnet nächsten Mittwoch ab heute
 function getNextWednesday(date = new Date()) {
   const nextWed = new Date(date);
   nextWed.setDate(date.getDate() + ((3 - date.getDay() + 7) % 7 || 7));
-  return nextWed.toISOString().split('T')[0]; // YYYY-MM-DD
+  return nextWed;
 }
 
-// Lade Daten
-function loadData() {
-  const data = localStorage.getItem(STORAGE_KEY);
-  if(data) return JSON.parse(data);
-  return {};
-}
-
-// Speichern
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(voteData));
-}
-
-// Benutzername (für Demo, kann man ändern)
-function getCurrentUser() {
-  if(isAdmin) return adminName;
-  let user = prompt("Bitte deinen Namen eingeben:");
-  if(participants.includes(user) && user !== adminName) return user;
-  alert("Unbekannter Benutzer!");
-  return "";
-}
-
-// Tabelle rendern
 function renderTable() {
   const tbody = document.querySelector("#voteTable tbody");
   tbody.innerHTML = "";
+  tableData = {};
 
-  // Sicherstellen, dass Daten geladen sind
-  voteData = loadData();
+  let date = getNextWednesday();
 
-  // nächste 52 Mittwoche erzeugen
-  const today = new Date();
-  for(let i=0; i<52; i++){
-    const date = getNextWednesday(new Date(today.getTime() + i*7*24*60*60*1000));
-    if(!voteData[date]){
-      voteData[date] = {};
-      participants.forEach(p => voteData[date][p] = "");
-    }
-  }
-
-  Object.keys(voteData).sort().forEach(date => {
+  for (let i = 0; i < 52; i++) { // für 52 Wochen
     const tr = document.createElement("tr");
     const tdDate = document.createElement("td");
-    tdDate.textContent = date;
+    const dateStr = date.toISOString().split("T")[0];
+    tdDate.textContent = dateStr;
     tr.appendChild(tdDate);
+
+    tableData[dateStr] = {};
 
     participants.forEach(p => {
       const td = document.createElement("td");
       const select = document.createElement("select");
-
-      // Nur Admin oder eigener Benutzer darf bearbeiten
-      select.disabled = (!isAdmin && p === adminName ? true : !isAdmin ? false : false);
-
       ["", "Ja", "Nein", "Vielleicht"].forEach(option => {
         const opt = document.createElement("option");
         opt.value = option;
@@ -84,10 +53,19 @@ function renderTable() {
         select.appendChild(opt);
       });
 
-      select.value = voteData[date][p];
-      select.addEventListener("change", e => {
-        voteData[date][p] = e.target.value;
-        saveData();
+      // Jeder kann nur seine Spalte bearbeiten, Admin darf alles
+      if(currentUser !== adminName && p !== currentUser) select.disabled = true;
+
+      select.addEventListener("change", () => {
+        tableData[dateStr][p] = select.value;
+      });
+
+      // Alte Werte aus Firebase laden
+      firebase.database().ref(`votes/${dateStr}/${p}`).once("value").then(snapshot => {
+        if(snapshot.exists()){
+          select.value = snapshot.val();
+          tableData[dateStr][p] = snapshot.val();
+        }
       });
 
       td.appendChild(select);
@@ -95,9 +73,16 @@ function renderTable() {
     });
 
     tbody.appendChild(tr);
-  });
+    date.setDate(date.getDate() + 7);
+  }
 }
 
-// Initialisierung
-let voteData = loadData();
-renderTable();
+// Speichert alle Änderungen in Firebase
+function saveAll() {
+  for(let date in tableData){
+    for(let p in tableData[date]){
+      firebase.database().ref(`votes/${date}/${p}`).set(tableData[date][p]);
+    }
+  }
+  alert("Alle Änderungen wurden gespeichert!");
+}

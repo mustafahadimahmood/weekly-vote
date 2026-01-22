@@ -3,31 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <title>Info Point – Teilnahme Mittwoch 16:00 Uhr</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; text-align: center; }
+    select:disabled { background-color: #eee; }
+    #msg { color:red; margin-top: 10px; }
+    #saveBtn { margin-top: 20px; padding: 10px 15px; font-size: 16px; display:block; }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
   <h1>Info Point – Teilnahme Mittwoch 16:00 Uhr</h1>
 
-  <div id="admin-login">
-    <label>Admin Passwort: <input type="password" id="adminPass"></label>
-    <button onclick="loginAdmin()">Login als Admin</button>
-    <span id="loginMsg"></span>
+  <div id="login">
+    <label>Gib deinen Namen ein: <input type="text" id="userName"></label>
+    <button onclick="loginUser()">Login</button>
+    <p id="msg"></p>
   </div>
 
-  <table id="voteTable">
-    <thead>
-      <tr>
-        <th>Datum</th>
-        <th>Christa</th>
-        <th>Ruben</th>
-        <th>Mustafa (Admin)</th>
-        <th>Theo</th>
-        <th>Cordula</th>
-        <th>Neli</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div id="tableContainer" style="display:none;">
+    <table id="voteTable" style="margin-top:20px;">
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Christa</th>
+          <th>Ruben</th>
+          <th>Mustafa (Admin)</th>
+          <th>Theo</th>
+          <th>Cordula</th>
+          <th>Neli</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <button id="saveBtn" onclick="saveAll()">Save</button>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "DEIN_API_KEY",
+      authDomain: "DEIN_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://DEIN_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "DEIN_PROJECT_ID",
+      storageBucket: "DEIN_PROJECT_ID.appspot.com",
+      messagingSenderId: "DEIN_SENDER_ID",
+      appId: "DEIN_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+  </script>
 
   <script src="script.js"></script>
 </body>
