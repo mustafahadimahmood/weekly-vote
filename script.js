@@ -1,6 +1,6 @@
 const participants = ["Christa", "Ruben", "Mustafa", "Theo", "Cordula", "Neli"];
 const adminName = "Mustafa";
-const adminPassword = "Wks07072023";
+const adminPassword = "admin123";
 let isAdmin = false;
 
 // localStorage key
@@ -22,7 +22,7 @@ function loginAdmin() {
 function getNextWednesday(date = new Date()) {
   const nextWed = new Date(date);
   nextWed.setDate(date.getDate() + ((3 - date.getDay() + 7) % 7 || 7));
-  return nextWed.toISOString().split('T')[0];
+  return nextWed.toISOString().split('T')[0]; // YYYY-MM-DD
 }
 
 // Lade Daten
@@ -37,7 +37,7 @@ function saveData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(voteData));
 }
 
-// Benutzername (für Demo)
+// Benutzername (für Demo, kann man ändern)
 function getCurrentUser() {
   if(isAdmin) return adminName;
   let user = prompt("Bitte deinen Namen eingeben:");
@@ -51,6 +51,7 @@ function renderTable() {
   const tbody = document.querySelector("#voteTable tbody");
   tbody.innerHTML = "";
 
+  // Sicherstellen, dass Daten geladen sind
   voteData = loadData();
 
   // nächste 52 Mittwoche erzeugen
@@ -73,6 +74,7 @@ function renderTable() {
       const td = document.createElement("td");
       const select = document.createElement("select");
 
+      // Nur Admin oder eigener Benutzer darf bearbeiten
       select.disabled = (!isAdmin && p === adminName ? true : !isAdmin ? false : false);
 
       ["", "Ja", "Nein", "Vielleicht"].forEach(option => {
@@ -96,6 +98,6 @@ function renderTable() {
   });
 }
 
+// Initialisierung
 let voteData = loadData();
 renderTable();
-
